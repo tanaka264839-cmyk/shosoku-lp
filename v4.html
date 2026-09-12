@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>初速制作室 | 「欲しい」を、AIですぐ形にする人。</title>
+<meta name="description" content="相談でもらった「こうなったらいいのに」を、AIと一緒に設計して実装し、最短1日で動く形にして返します。LP・Webアプリ・業務ツール・AI機能の制作。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@500;700;800&family=Zen+Kaku+Gothic+New:wght@400;500;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#0a0a0a;--paper:#f3f4f1;--lime:#d4ff00;--white:#f7f7f2;--muted:rgba(247,247,242,.64);--line:rgba(247,247,242,.14);
+  --ease:cubic-bezier(.16,1,.3,1);--pad:clamp(20px,6vw,96px);--core-o:1;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--ink);color:var(--white);font-family:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic",sans-serif;line-height:1.85;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+img{display:block;max-width:100%}
+a{color:inherit}
+ul,ol{list-style:none}
+
+/* ===== 背景の層：光の粒・球・周りの暗さ・粒子（基準7） ===== */
+.fx{position:fixed;inset:0;overflow:hidden;pointer-events:none}
+.fx-back{z-index:0}
+.fx-front{z-index:3}
+#dots{position:absolute;inset:0}
+#dots i{position:absolute;left:0;top:0;border-radius:50%;background:radial-gradient(circle,rgba(212,255,0,.85) 0%,rgba(212,255,0,.22) 45%,rgba(212,255,0,0) 70%);will-change:transform}
+#core{position:absolute;left:0;top:0;width:min(92vw,88vh);aspect-ratio:1;transform-origin:50% 50%;opacity:var(--core-o);transition:opacity .9s var(--ease);will-change:transform}
+#sphere{display:block;width:100%;height:100%}
+.pin{position:absolute;left:0;top:0;display:flex;align-items:center;gap:.5rem;font-size:.74rem;letter-spacing:.08em;white-space:nowrap;will-change:transform,opacity}
+.pin::before{content:"";width:9px;height:9px;border-radius:50%;background:var(--lime);box-shadow:0 0 12px var(--lime)}
+.state{font-family:"Syne",sans-serif;font-weight:700;font-size:.72rem;letter-spacing:.16em;color:var(--lime);white-space:nowrap;padding-left:.9rem;border-left:1px solid rgba(247,247,242,.25)}
+#vig{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 45%,rgba(0,0,0,0) 50%,rgba(0,0,0,.5) 100%)}
+#grain{position:absolute;inset:-50%;opacity:.07;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");animation:grain 1.4s steps(6) infinite}
+@keyframes grain{0%{transform:translate(0,0)}20%{transform:translate(-3%,2%)}40%{transform:translate(2%,-3%)}60%{transform:translate(-2%,-1%)}80%{transform:translate(3%,1%)}100%{transform:translate(0,0)}}
+
+/* ===== 上の帯・時計・進み具合（基準8） ===== */
+#hdr{position:fixed;top:0;left:0;right:0;z-index:20;display:flex;align-items:center;gap:2rem;padding:18px var(--pad)}
+#hdr::before{content:"";position:absolute;left:0;right:0;top:0;height:160%;background:linear-gradient(180deg,rgba(10,10,10,.86) 0%,rgba(10,10,10,.42) 55%,rgba(10,10,10,0) 100%);z-index:-1;pointer-events:none}
+.logo{display:flex;align-items:center;gap:.6rem;font-weight:900;font-size:1.05rem;letter-spacing:.14em;text-decoration:none}
+.logo i{width:12px;height:12px;border-radius:50%;background:var(--lime);box-shadow:0 0 14px var(--lime)}
+.nav{display:flex;gap:1.6rem;margin-left:auto;font-size:.82rem;letter-spacing:.1em}
+.nav a{text-decoration:none;color:var(--muted);transition:color .2s}
+.nav a:hover{color:var(--lime)}
+.clock{display:flex;align-items:center;gap:.7rem;height:2.6rem;overflow:hidden;color:var(--lime)}
+.clock small{font-size:.66rem;letter-spacing:.3em;color:var(--muted)}
+#clock{display:inline-block;font-family:"Syne",sans-serif;font-weight:700;font-size:1.6rem;line-height:2.6rem}
+#clock.tick{animation:tick .9s var(--ease)}
+@keyframes tick{from{transform:translateY(80px);filter:blur(8px);opacity:0}to{transform:none;filter:blur(0);opacity:1}}
+.steps{position:fixed;z-index:20;right:clamp(10px,1.6vw,26px);top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:14px}
+.steps li{width:10px;height:10px;border-radius:50%;border:1px solid rgba(247,247,242,.35);transition:background .8s var(--ease),box-shadow .8s var(--ease),border-color .8s}
+.steps li.lit{background:var(--lime);border-color:var(--lime);box-shadow:0 0 14px var(--lime)}
+
+/* ===== 出てくる動き（基準5） ===== */
+.r{opacity:0;transform:translateY(96px) scale(.97);filter:blur(12px);transition:opacity 1s var(--ease),transform 1.4s var(--ease),filter 1.1s var(--ease)}
+.r.on{opacity:1;transform:none;filter:blur(0)}
+
+/* ===== 共通 ===== */
+main{position:relative;z-index:2;overflow-x:clip}
+.scene{position:relative;padding:18vh var(--pad)}
+.stamp{display:flex;align-items:baseline;gap:1.1rem;color:var(--lime)}
+.stamp b{font-family:"Syne",sans-serif;font-weight:800;font-size:clamp(3.2rem,8vw,8rem);line-height:.9;letter-spacing:-.02em}
+.stamp span{font-size:.85rem;letter-spacing:.3em;color:var(--muted)}
+.h2{font-weight:900;font-size:clamp(2.1rem,4.8vw,4.6rem);line-height:1.22;letter-spacing:.01em}
+.lead{color:var(--muted);font-size:clamp(.95rem,1.1vw,1.05rem);margin-top:1.6rem;max-width:36em}
+.h2,.contact .big,.st h3,.soon p,.work h3{word-break:auto-phrase;text-wrap:balance}
+.lead,.svc p,.st p,.work p,.kv-lead,.faq summary,.faq details p{word-break:auto-phrase;text-wrap:pretty}
+.band{position:relative;height:clamp(420px,82vh,860px);margin:0 calc(var(--pad) * -1);overflow:hidden;border-radius:50% / 9vw}
+.band img{width:100%;height:120%;object-fit:cover;filter:saturate(.55) brightness(.8) contrast(1.06);will-change:transform}
+.band::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,rgba(10,10,10,.4) 0%,rgba(10,10,10,0) 30%,rgba(10,10,10,0) 58%,rgba(10,10,10,.7) 100%)}
+.band .stamp{position:absolute;left:var(--pad);bottom:9%;z-index:2}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.8rem;padding:1rem 2rem;border-radius:999px;text-decoration:none;font-weight:700;letter-spacing:.12em;transition:transform .35s var(--ease),box-shadow .35s}
+.btn:hover{transform:translateY(-3px)}
+.btn-lime{background:var(--lime);color:#0a0a0a;box-shadow:0 0 30px rgba(212,255,0,.35)}
+.btn-line{border:1px solid rgba(247,247,242,.5);color:var(--white)}
+
+/* ===== KV：中心の球のまわりを相談の言葉が回り、スクロールで吸い込まれて形になる（基準2・8・9） ===== */
+.kv{position:relative;height:280vh}
+.kv-stage{position:sticky;top:0;height:100vh;overflow:hidden}
+#ring{position:absolute;inset:0;z-index:1;display:block;width:100%;height:100%;pointer-events:none}
+.kv-head{position:absolute;left:50%;top:40%;z-index:2;width:max-content;max-width:94vw;text-align:center;transform:translate(-50%,-50%)}
+.kv-label{margin-bottom:1.4rem;font-size:.8rem;letter-spacing:.3em;color:var(--lime)}
+.kv-title{font-weight:900;font-size:clamp(2.6rem,6.2vw,6.6rem);line-height:1.1;letter-spacing:.01em;text-shadow:0 0 24px rgba(10,10,10,.95),0 8px 60px rgba(10,10,10,.85)}
+.kv-title span{display:block;white-space:nowrap}
+.kv-title span:nth-child(2){color:var(--lime)}
+.cta-row{display:flex;flex-wrap:wrap;gap:1rem;margin-top:2.6rem}
+.kv-made .made{position:absolute;left:0;top:0;z-index:3;display:grid;grid-template-columns:auto 1fr;column-gap:.75rem;align-items:center;padding:.85rem 1.25rem .85rem .95rem;border-radius:14px;background:rgba(10,10,10,.8);border:1px solid rgba(212,255,0,.6);box-shadow:0 0 40px rgba(212,255,0,.22);white-space:nowrap;opacity:0;will-change:transform,opacity,filter}
+.made i{position:relative;grid-row:1 / span 2;width:26px;height:26px;border-radius:50%;background:var(--lime)}
+.made i::after{content:"";position:absolute;left:9px;top:5px;width:7px;height:12px;border:solid #0a0a0a;border-width:0 2.5px 2.5px 0;transform:rotate(45deg)}
+.made b{font-size:clamp(.95rem,1.2vw,1.15rem);font-weight:900;line-height:1.35}
+.made small{font-size:.72rem;letter-spacing:.14em;color:var(--lime)}
+.kv-pulse{position:absolute;left:50%;top:46%;z-index:2;width:20px;height:20px;border-radius:50%;border:1.5px solid var(--lime);opacity:0;transform:translate(-50%,-50%);pointer-events:none}
+.kv-pulse.on{animation:kvpulse 1.4s var(--ease) forwards}
+@keyframes kvpulse{0%{opacity:.95;width:20px;height:20px}100%{opacity:0;width:110vmin;height:110vmin}}
+.kv-foot{position:absolute;left:50%;bottom:6vh;z-index:2;width:min(92vw,720px);text-align:center;transform:translateX(-50%)}
+.kv-lead{font-size:clamp(.92rem,1.1vw,1.05rem);color:var(--muted);word-break:auto-phrase;text-wrap:balance;text-shadow:0 0 18px rgba(10,10,10,.9)}
+.kv-foot .cta-row{justify-content:center;margin-top:1.5rem}
+.kv-hint{position:absolute;left:var(--pad);bottom:4vh;z-index:2;display:flex;align-items:center;gap:.8rem;font-size:.7rem;letter-spacing:.28em;color:var(--muted)}
+.kv-hint i{width:1px;height:40px;background:linear-gradient(var(--lime),rgba(212,255,0,0));transform-origin:top;animation:hint 2.2s ease-in-out infinite}
+@keyframes hint{0%{transform:scaleY(0)}50%{transform:scaleY(1)}100%{transform:scaleY(1);opacity:0}}
+
+/* ===== 09:00 ヒアリング／できること（軌道に並べる） ===== */
+.s-head{position:relative;z-index:2;margin-top:12vh}
+.orbit{position:relative;height:clamp(660px,98vh,980px);margin-top:8vh}
+.orbit .ring{position:absolute;inset:0;width:100%;height:100%;overflow:visible}
+.orbit .ring ellipse{fill:none;stroke:rgba(212,255,0,.38);stroke-width:1.2;stroke-dasharray:2 7;vector-effect:non-scaling-stroke}
+.svc{position:absolute;width:min(30vw,380px)}
+.svc::before{content:"";position:absolute;left:-24px;top:.75rem;width:11px;height:11px;border-radius:50%;background:var(--lime);box-shadow:0 0 16px var(--lime)}
+.svc .no{font-family:"Syne",sans-serif;font-weight:800;font-size:.9rem;letter-spacing:.2em;color:var(--lime)}
+.svc h3{font-weight:900;font-size:clamp(1.3rem,1.9vw,1.9rem);line-height:1.35;margin:.3rem 0 .6rem}
+.svc p{color:var(--muted);font-size:.92rem}
+.svc .price{margin-top:1rem;font-family:"Syne",sans-serif;font-weight:800;font-size:clamp(1.7rem,2.6vw,2.6rem);line-height:1}
+.svc .price small{font-family:"Zen Kaku Gothic New",sans-serif;font-weight:500;font-size:.8rem;color:var(--muted);margin-left:.4rem}
+.svc .price em{display:block;margin-top:.5rem;font-style:normal;font-family:"Zen Kaku Gothic New",sans-serif;font-weight:500;font-size:.8rem;color:var(--lime)}
+.svc:nth-of-type(1){left:7%;top:7%}
+.svc:nth-of-type(2){left:52%;top:0}
+.svc:nth-of-type(3){left:57%;top:55%}
+.svc:nth-of-type(4){left:11%;top:59%}
+
+/* ===== 11:00 お見積もり／料金（日数の目盛りに並べる紙） ===== */
+.sheet{position:relative;z-index:2;margin:0 calc(var(--pad) * -1);padding:20vh var(--pad);background:var(--paper);color:#151515;border-radius:50% / 7vw}
+.sheet .stamp{color:#6a8200}
+.sheet .stamp span{color:#555}
+.sheet .h2{color:#111}
+.sheet .lead{color:#444}
+.days{margin-top:9vh}
+.days-head,.day-row{display:grid;grid-template-columns:minmax(200px,24%) 1fr;gap:2.4rem;align-items:center}
+.ticks{display:grid;grid-template-columns:repeat(10,1fr);font-family:"Syne",sans-serif;font-weight:700;font-size:.78rem;color:#777;border-bottom:1px solid #d6d6ce;padding-bottom:.6rem}
+.day-row{padding:1.7rem 0;border-bottom:1px solid #deded6}
+.day-row .name{font-weight:900;font-size:1.15rem;line-height:1.45}
+.day-row .name small{display:block;margin-top:.3rem;font-weight:500;font-size:.8rem;color:#666}
+.badge{display:inline-block;margin-left:.5rem;padding:.05rem .55rem;border-radius:999px;background:var(--lime);color:#111;font-size:.68rem;font-weight:700;vertical-align:middle}
+.track{display:grid;grid-template-columns:repeat(10,1fr);height:58px}
+.bar{grid-column:1 / span var(--d);display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:0 1.3rem;border-radius:999px;background:#111;color:var(--lime);font-family:"Syne",sans-serif;font-weight:800;font-size:clamp(1.05rem,1.7vw,1.55rem);white-space:nowrap;transform-origin:left center;transform:scaleX(.08);transition:transform 1.4s var(--ease)}
+.bar small{font-family:"Zen Kaku Gothic New",sans-serif;font-weight:500;font-size:.76rem;color:#d9e6a0}
+.days.on .bar{transform:scaleX(1)}
+.notes{margin-top:2.6rem;font-size:.85rem;line-height:2;color:#555}
+.notes li:last-child{color:#111;font-weight:700}
+
+/* ===== 14:00 制作／得意なこと ===== */
+.strengths{margin-top:12vh;display:flex;flex-direction:column;gap:10vh}
+.st{position:relative;display:grid;grid-template-columns:auto 1fr;gap:2.4rem;align-items:start;max-width:min(76vw,1000px)}
+.st:nth-child(even){margin-left:auto}
+.st .num{font-family:"Syne",sans-serif;font-weight:800;font-size:clamp(4rem,9vw,9rem);line-height:.8;color:transparent;-webkit-text-stroke:1px rgba(212,255,0,.75)}
+.st h3{font-weight:900;font-size:clamp(1.5rem,2.7vw,2.6rem);line-height:1.38}
+.st p{margin-top:1rem;max-width:34em;color:var(--muted)}
+
+/* ===== 21:00 制作実績 ===== */
+.works{margin-top:12vh;display:flex;flex-direction:column;gap:18vh}
+.work{position:relative;display:grid;grid-template-columns:1.2fr 1fr;gap:5vw;align-items:center}
+.work:nth-child(even){grid-template-columns:1fr 1.2fr}
+.work:nth-child(even) .shots{order:2}
+.shots{position:relative;aspect-ratio:16/11}
+.shots .pc{position:absolute;left:0;top:0;width:86%;border-radius:14px;overflow:hidden;outline:1px solid rgba(212,255,0,.45);box-shadow:0 30px 60px rgba(0,0,0,.6);transform:rotate(-2.5deg)}
+.shots .sp{position:absolute;right:2%;bottom:-6%;width:27%;border-radius:22px;overflow:hidden;outline:1px solid rgba(212,255,0,.6);box-shadow:0 30px 60px rgba(0,0,0,.7);transform:rotate(4deg)}
+.shots img{filter:saturate(.75)}
+.shots.bot{display:flex;align-items:center;justify-content:center}
+.shots.bot .orb{position:absolute;width:46%;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 36% 32%,#f4ffb8 0%,#d4ff00 34%,#6a8200 78%,#1d2600 100%);box-shadow:0 0 90px rgba(212,255,0,.35)}
+.shots.bot .word{position:relative;font-family:"Syne",sans-serif;font-weight:800;font-size:clamp(4rem,11vw,10rem);line-height:1;color:transparent;-webkit-text-stroke:1.5px var(--white);letter-spacing:-.02em}
+.shots.bot .fee{position:absolute;left:4%;bottom:6%;font-weight:700;font-size:.9rem;letter-spacing:.1em;color:var(--lime)}
+.work .tag{font-size:.78rem;letter-spacing:.2em;color:var(--lime)}
+.work h3{margin:.4rem 0 1rem;font-weight:900;font-size:clamp(1.8rem,3.4vw,3.2rem);line-height:1.25}
+.work p{color:var(--muted)}
+.work .links{display:flex;flex-wrap:wrap;gap:1.4rem;margin-top:1.6rem}
+.work .links a{padding-bottom:.2rem;border-bottom:1px solid rgba(212,255,0,.5);color:var(--lime);text-decoration:none;font-weight:700;letter-spacing:.08em}
+.soon{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:end;gap:2rem;padding-top:7vh;border-top:1px solid var(--line)}
+.soon p{font-weight:900;font-size:clamp(1.4rem,2.6vw,2.4rem);line-height:1.4;max-width:18em}
+
+/* ===== 翌09:00 納品／よくある質問・相談 ===== */
+.faq{margin-top:12vh;border-top:1px solid var(--line)}
+.faq details{border-bottom:1px solid var(--line)}
+.faq summary{display:grid;grid-template-columns:auto 1fr auto;gap:1.4rem;align-items:center;padding:1.6rem 0;list-style:none;cursor:pointer;font-weight:700;font-size:clamp(1rem,1.4vw,1.25rem)}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary b{font-family:"Syne",sans-serif;font-weight:800;font-size:1.4rem;color:var(--lime)}
+.faq summary i{position:relative;width:14px;height:14px}
+.faq summary i::before,.faq summary i::after{content:"";position:absolute;left:0;top:6px;width:14px;height:2px;background:var(--lime);transition:transform .3s}
+.faq summary i::after{transform:rotate(90deg)}
+.faq details[open] summary i::after{transform:rotate(0)}
+.faq details p{padding:0 0 1.8rem 3.1rem;max-width:48em;color:var(--muted)}
+.contact{position:relative;margin-top:22vh}
+.contact .big{font-weight:900;font-size:clamp(2.5rem,7vw,7.6rem);line-height:1.12;letter-spacing:-.01em}
+.contact .big span{color:var(--lime)}
+.contact p{margin-top:1.6rem;color:var(--muted)}
+footer{position:relative;z-index:2;display:flex;flex-wrap:wrap;justify-content:space-between;gap:1rem;padding:32px var(--pad);border-top:1px solid var(--line);font-size:.8rem;color:var(--muted)}
+footer b{color:var(--lime);letter-spacing:.14em}
+.actbar{display:none}
+
+/* ===== スマホ ===== */
+@media (max-width:760px){
+  .nav{display:none}
+  .kv{height:240vh}
+  .kv-head{top:34%}
+  .kv-label{font-size:.68rem;letter-spacing:.2em;margin-bottom:.9rem}
+  .kv-title{font-size:8.6vw}
+  .kv-foot{bottom:15vh}
+  .kv-foot .cta-row{display:none}
+  .kv-lead{font-size:.86rem}
+  .kv-hint{display:none}
+  .kv-made .made{padding:.55rem .85rem .55rem .65rem;column-gap:.55rem}
+  .made b{font-size:.86rem}
+  .made i{width:22px;height:22px}
+  .made i::after{left:7px;top:4px;width:6px;height:10px}
+  .clock small{display:none}
+  .state{font-size:.62rem;padding-left:.6rem}
+  .stamp b{font-size:14vw;white-space:nowrap}
+  .band .stamp{flex-direction:column;align-items:flex-start;gap:.2rem;bottom:7%}
+  .bar{font-size:1rem;padding:0 .9rem;min-width:min(100%,12.5rem)}
+  .bar small{font-size:.66rem}
+  .contact .big{font-size:9.4vw}
+  #hdr{padding:14px 20px;justify-content:space-between}
+  #clock{font-size:1.35rem}
+  .steps{top:64px;right:20px;transform:none;flex-direction:row;gap:8px}
+  #core{opacity:calc(var(--core-o) * .8)}
+  .scene{padding:14vh 20px}
+  .band{height:58vh;border-radius:50% / 12vw}
+  .orbit{height:auto;margin-top:6vh;padding-left:30px}
+  .orbit .ring{display:none}
+  .orbit::before{content:"";position:absolute;left:5px;top:0;bottom:0;width:1px;background:repeating-linear-gradient(to bottom,rgba(212,255,0,.55) 0 3px,rgba(212,255,0,0) 3px 10px)}
+  .orbit .svc{position:relative;left:auto;top:auto;width:auto;margin-bottom:8vh}
+  .orbit .svc::before{left:-30px}
+  .sheet{padding:14vh 20px;border-radius:50% / 12vw}
+  .days-head{display:none}
+  .day-row{grid-template-columns:1fr;gap:.9rem}
+  .track{height:48px}
+  .st,.st:nth-child(even){grid-template-columns:1fr;gap:.6rem;max-width:none;margin-left:0}
+  .work,.work:nth-child(even){grid-template-columns:1fr;gap:3rem}
+  .work:nth-child(even) .shots{order:0}
+  .faq details p{padding-left:0}
+  .actbar{position:fixed;left:12px;right:12px;bottom:12px;z-index:30;display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:7px;border-radius:999px;background:rgba(10,10,10,.76);border:1px solid rgba(247,247,242,.16);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+  .actbar a{display:flex;align-items:center;justify-content:center;height:46px;border-radius:999px;font-weight:700;font-size:.9rem;letter-spacing:.06em;text-decoration:none}
+  .actbar a:first-child{background:var(--lime);color:#0a0a0a}
+  .actbar a:last-child{border:1px solid rgba(247,247,242,.45)}
+  footer{padding-bottom:100px}
+}
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation:none !important;transition:none !important}
+  .r{opacity:1 !important;transform:none !important;filter:none !important}
+  .bar{transform:none !important}
+}
+</style>
+<noscript><style>.r{opacity:1;transform:none;filter:none}.bar{transform:none}</style></noscript>
+</head>
+<body>
+<div class="fx fx-back" aria-hidden="true">
+  <div id="dots"></div>
+  <div id="core">
+    <canvas id="sphere"></canvas>
+    <div class="pin" data-lat="22" data-lon="20">関西弁ToDoアプリ</div>
+    <div class="pin" data-lat="-18" data-lon="140">いっちょうあがり</div>
+    <div class="pin" data-lat="38" data-lon="250">商談まえだ</div>
+    
+  </div>
+</div>
+<div class="fx fx-front" aria-hidden="true">
+  <div id="vig"></div>
+  <div id="grain"></div>
+</div>
+
+<header id="hdr">
+  <a class="logo" href="#top"><i></i>初速制作室</a>
+  <nav class="nav" aria-label="ページ内の案内">
+    <a href="#t0900">サービス</a><a href="#t1400">得意なこと</a><a href="#t2100">実績</a><a href="#t0900b">流れ</a><a href="#t1100">料金</a><a href="#contact">依頼する</a>
+  </nav>
+  <div class="clock"><small>いま</small><span id="clock">08:40</span><span class="state" id="state">設計中 0%</span></div>
+</header>
+<ol class="steps" aria-hidden="true"><li></li><li></li><li></li><li></li><li></li></ol>
+
+<main>
+  <section class="kv" id="top" data-time="08:40" data-step="0">
+    <div class="kv-stage">
+      <canvas id="ring" aria-hidden="true"></canvas>
+      <div class="kv-head">
+        <p class="kv-label r">初速制作室｜AIでつくる制作室</p>
+        <h1 class="kv-title"><span class="r">「欲しい」を、AIで</span><span class="r">すぐ形にする人。</span></h1>
+      </div>
+      <div class="kv-made" aria-hidden="true">
+        <div class="made"><i></i><b>関西弁ToDoアプリ</b><small>1日で公開</small></div>
+        <div class="made"><i></i><b>いっちょうあがり</b><small>1日で公開</small></div>
+        <div class="made"><i></i><b>商談まえだ</b><small>1日で稼働</small></div>
+      </div>
+      <span class="kv-pulse" aria-hidden="true"></span>
+      <div class="kv-foot">
+        <p class="kv-lead r">相談でもらった「こうなったらいいのに」を、AIと一緒に設計して実装し、最短1日で動く形にして返します。</p>
+        <div class="cta-row r"><a class="btn btn-lime" href="#contact">制作を依頼する</a><a class="btn btn-line" href="#t2100">実績を見る</a></div>
+      </div>
+      <p class="kv-hint" aria-hidden="true"><i></i>スクロールすると、相談が形になります</p>
+    </div>
+  </section>
+
+  <section class="scene" id="t0900" data-time="09:00" data-step="1">
+    <figure class="band r"><img class="px" data-speed=".12" src="01_0900_ヒアリング.jpg" alt="朝の机。ノートに鉛筆で描いた円と、黄緑に光るガラスの球"><div class="stamp"><b>09:00</b><span>ヒアリング（無料・30分）</span></div></figure>
+    <div class="s-head">
+      <h2 class="h2 r">作りたいものを、<br>ざっくり聞かせてください。</h2>
+      <p class="lead r">作りたいもの・目的・納期・予算をお聞きします。まずはざっくりご相談ください。</p>
+    </div>
+    <div class="orbit">
+      <svg class="ring" viewBox="0 0 1000 1000" preserveAspectRatio="none" aria-hidden="true"><ellipse cx="500" cy="500" rx="470" ry="330" transform="rotate(-8 500 500)"/></svg>
+      <div class="svc r"><p class="no">01</p><h3>Webアプリ制作</h3><p>ToDoアプリ・業務ツール・社内ダッシュボードなど。要件ヒアリングから設計・実装・デプロイまで一括対応。</p><p class="price">¥50,000〜<small>/ 1案件</small></p></div>
+      <div class="svc r"><p class="no">02</p><h3>LP・サービスサイト制作</h3><p>サービス紹介・集客・採用など目的に合わせたLPを制作。レスポンシブ対応・SEO基礎設定込み。</p><p class="price">¥15,000〜<small>/ 初回限定</small><em>通常 ¥30,000〜</em></p></div>
+      <div class="svc r"><p class="no">03</p><h3>業務ツール・自動化</h3><p>スプレッドシート連携・Slack通知・PDF生成など「今ある作業をラクにしたい」を実現するツール開発。</p><p class="price">¥30,000〜<small>/ 1件</small></p></div>
+      <div class="svc r"><p class="no">04</p><h3>AI機能の組み込み</h3><p>既存サービスへのChatGPT・Claude連携、文章生成・要約・分類など、AI APIを使った機能追加。</p><p class="price">¥40,000〜<small>/ 1機能</small></p></div>
+    </div>
+  </section>
+
+  <section class="scene" id="t1100" data-time="11:00" data-step="2">
+    <figure class="band r"><img class="px" data-speed=".12" src="02_1100_見積もり.jpg" alt="タブレットの線の球を指さす二人の手と、黄緑に光る球"><div class="stamp"><b>11:00</b><span>お見積もり・合意</span></div></figure>
+    <div class="sheet" style="margin-top:12vh">
+      <h2 class="h2 r">金額と日数を、<br>先に並べます。</h2>
+      <p class="lead r">内容をもとに金額・納期・対応範囲を提示します。納得いただけたらご依頼確定です。</p>
+      <div class="days">
+        <div class="days-head"><span></span><div class="ticks"><span>1日</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span><span>9</span><span>10日</span></div></div>
+        <div class="day-row"><p class="name">LP（1ページ）<span class="badge">初回限定</span><small>デザイン・コーディング・レスポンシブ対応</small></p><div class="track"><div class="bar" style="--d:5">¥15,000〜<small>1〜5日</small></div></div></div>
+        <div class="day-row"><p class="name">シンプルWebアプリ<small>要件定義・設計・実装・デプロイ</small></p><div class="track"><div class="bar" style="--d:10">¥50,000〜<small>1〜10日</small></div></div></div>
+        <div class="day-row"><p class="name">業務ツール・自動化<small>要件ヒアリング・実装・使い方説明</small></p><div class="track"><div class="bar" style="--d:7">¥30,000〜<small>1〜7日</small></div></div></div>
+        <div class="day-row"><p class="name">AI機能追加<small>API連携・プロンプト設計・実装</small></p><div class="track"><div class="bar" style="--d:10">¥40,000〜<small>1〜10日</small></div></div></div>
+      </div>
+      <ul class="notes r">
+        <li>※ 金額は参考目安です。要件により変動します。まずはお気軽にご相談ください。</li>
+        <li>※ お支払いはクレジットカード・銀行振込に対応しています。</li>
+        <li>※ ご依頼確定後、着手前に全額前払い（または50%前払い）をお願いしています。</li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="scene" id="t1400" data-time="14:00" data-step="3">
+    <figure class="band r"><img class="px" data-speed=".12" src="03_1400_制作.jpg" alt="コードと作りかけの線の球が映る画面、キーボードの手"><div class="stamp"><b>14:00</b><span>制作・中間共有</span></div></figure>
+    <div class="s-head">
+      <h2 class="h2 r">途中も見せながら、<br>一気に作ります。</h2>
+      <p class="lead r">着手後、途中経過を随時共有。フィードバックを反映しながら進めます。</p>
+    </div>
+    <div class="strengths">
+      <div class="st r"><span class="num">01</span><div><h3>最短1日でリリースまで持っていく</h3><p>アイデアが固まったその日にデプロイまで完走。「まず動くものを見たい」に応えます。制作実績の「いっちょうあがり」はコンセプト設計からVercel公開まで1日で完結。</p></div></div>
+      <div class="st r"><span class="num">02</span><div><h3>個人事業主・フリーランスの事情がわかる</h3><p>「予算は限られてる」「技術的なことは任せたい」「でも完成イメージは伝えにくい」——その感覚を持って制作します。一人で動いているからこそ、一人の相談に向き合えます。</p></div></div>
+      <div class="st r"><span class="num">03</span><div><h3>企画・設計・実装・公開まで一人で完結</h3><p>「ディレクターと開発者で話が噛み合わない」が起きません。あなたの言葉を直接コードに変換するので、認識のズレが最小限です。</p></div></div>
+      <div class="st r"><span class="num">04</span><div><h3>AIを道具として使いこなす</h3><p>Claude・ChatGPT等のAPIを実務で使い続けています。「AIを組み込みたいけど何から始めれば」という相談も歓迎。機能追加から設計まで対応します。</p></div></div>
+    </div>
+  </section>
+
+  <section class="scene" id="t2100" data-time="21:00" data-step="4">
+    <div class="stamp r"><b>21:00</b><span>形になったもの</span></div>
+    <h2 class="h2 r" style="margin-top:2rem">これまでに、<br>1日で完走したもの。</h2>
+    <div class="works">
+      <article class="work">
+        <div class="shots r"><div class="pc"><img src="実績_関西弁ToDo_pc.png" alt="関西弁ToDoアプリのPC画面"></div><div class="sp"><img src="実績_関西弁ToDo_sp.png" alt="関西弁ToDoアプリのスマホ画面"></div></div>
+        <div class="r"><p class="tag">Webアプリ</p><h3>関西弁ToDoアプリ</h3><p>タスク管理をおもしろく。関西弁で喋るToDoアプリ。デザイン〜実装〜公開まで1日で完結。</p><div class="links"><a href="https://kansai-todo.vercel.app/" target="_blank" rel="noopener">アプリを見る</a></div></div>
+      </article>
+      <article class="work">
+        <div class="shots r"><div class="pc"><img src="実績_いっちょうあがり_pc.png" alt="いっちょうあがりのPC画面"></div><div class="sp"><img src="実績_いっちょうあがり_sp.png" alt="いっちょうあがりのスマホ画面"></div></div>
+        <div class="r"><p class="tag">Webアプリ</p><h3>いっちょうあがり</h3><p>ネタを1つ入力するだけでX・note・Instagram用の投稿文を口調付きで一括生成するアプリ。Claude API + Stripe決済（¥980/月）をHTML/JS単体で実装。コンセプト設計からデプロイまで1日で完走。</p><div class="links"><a href="https://icchoagari.vercel.app" target="_blank" rel="noopener">アプリを見る</a></div></div>
+      </article>
+      <article class="work">
+        <div class="shots bot r" aria-hidden="true"><span class="orb"></span><span class="word">LINE</span><span class="fee">無料3回 → 月額980円</span></div>
+        <div class="r"><p class="tag">LINEボット</p><h3>商談まえだ</h3><p>企業調査AIアシスタント。LINE上で動き、無料3回→月額980円のStripe課金。1日で設計〜本番稼働まで完走。</p><div class="links"><a href="https://line.me/R/ti/p/@572qmolf" target="_blank" rel="noopener">LINEで見る</a><a href="https://github.com/tanaka264839-cmyk/shodan-maeda" target="_blank" rel="noopener">GitHub</a></div></div>
+      </article>
+      <div class="soon r"><p>あなたのプロジェクトが次の実績になるかもしれません。</p><a class="btn btn-line" href="#contact">相談してみる</a></div>
+    </div>
+  </section>
+
+  <section class="scene" id="t0900b" data-time="翌09:00" data-step="5">
+    <figure class="band r"><img class="px" data-speed=".12" src="04_翌0900_納品.jpg" alt="朝日の机に置かれたスマホと、形になった黄緑の球"><div class="stamp"><b>翌09:00</b><span>納品・修正対応</span></div></figure>
+    <div class="s-head">
+      <h2 class="h2 r">朝には、<br>動くものを渡します。</h2>
+      <p class="lead r">最終確認後、ファイルまたはデプロイ済みURLで納品。軽微な修正は納品後1週間以内無料。</p>
+    </div>
+    <div class="faq r">
+      <details><summary><b>Q</b>技術的なことがわからなくても依頼できますか？<i></i></summary><p>はい、まったく問題ありません。「こういうものが欲しい」というイメージだけ教えてください。技術的な要件整理からお手伝いします。</p></details>
+      <details><summary><b>Q</b>修正はどこまで対応してもらえますか？<i></i></summary><p>納品後1週間以内の軽微な修正（テキスト変更・色調整など）は無料で対応します。仕様変更や機能追加については別途お見積もりします。</p></details>
+      <details><summary><b>Q</b>急ぎの依頼にも対応できますか？<i></i></summary><p>内容によっては最短1日での対応も可能です。まずご相談ください。スケジュールが空いていれば特急対応します（別途特急料金はいただきません）。</p></details>
+      <details><summary><b>Q</b>どんな技術で作りますか？<i></i></summary><p>HTML/CSS/JavaScript・React・Next.jsを中心に、要件に合わせて選定します。バックエンドはFirebase・Supabase・Node.jsなど。AIはOpenAI・Anthropic APIに対応しています。</p></details>
+      <details><summary><b>Q</b>完成後のサポートはありますか？<i></i></summary><p>納品後1週間の無償サポートに加え、継続的な保守・改善についても対応しています。まずはご相談ください。</p></details>
+    </div>
+    <div class="contact" id="contact">
+      <p class="big r">まずは気軽に<br><span>相談してください。</span></p>
+      <p class="r">「こんなの作れる？」レベルのご相談から歓迎です。<br>ヒアリング・お見積もりは無料です。</p>
+      <div class="cta-row r">
+        <a class="btn btn-lime" href="https://coconala.com/users/3389958" target="_blank" rel="noopener">ココナラで相談する</a>
+        <a class="btn btn-line" href="https://x.com/EJ6aNsgkA127548" target="_blank" rel="noopener">Xでメッセージを送る</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer><b>初速制作室</b><span>LP・Webアプリ・業務ツール | AI制作</span><span>© 2026</span></footer>
+
+<nav class="actbar" aria-label="すぐに押せる案内"><a href="#contact">制作を依頼する</a><a href="#t2100">実績を見る</a></nav>
+
+<script>
+(() => {
+  const root = document.documentElement;
+  const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // 光の粒（基準7：奥行き）
+  const dotsEl = document.getElementById('dots');
+  let seed = 11;
+  const rand = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const dots = [];
+  for (let i = 0; i < 16; i++) {
+    const d = document.createElement('i');
+    const size = 6 + rand() * 70;
+    d.style.width = d.style.height = size + 'px';
+    d.style.left = (rand() * 100) + 'vw';
+    d.style.opacity = (.05 + rand() * .16).toFixed(2);
+    d.style.filter = `blur(${(size / 12).toFixed(1)}px)`;
+    dotsEl.append(d);
+    dots.push({ d, base: rand() * 140, speed: .04 + rand() * .3 });
+  }
+  const placeDots = () => {
+    const vh = innerHeight, H = vh * 1.4;
+    dots.forEach(o => {
+      let y = (o.base / 100 * vh - (reduce ? 0 : scrollY * o.speed)) % H;
+      if (y < 0) y += H;
+      o.d.style.transform = `translate3d(0,${(y - vh * .2).toFixed(1)}px,0)`;
+    });
+  };
+
+  // 視覚の核：線の球が、スクロールで本物の球に変わる（基準4・9）
+  const cv = document.getElementById('sphere');
+  const cx2 = cv.getContext('2d');
+  const coreEl = document.getElementById('core');
+  const pins = [...document.querySelectorAll('.pin')];
+  const stateEl = document.getElementById('state');
+  let dpr = 1, W = 0, H = 0, P = 0, targetP = 0, rot = 0, pinK = 1;
+  const resize = () => {
+    const r = { width: cv.offsetWidth, height: cv.offsetHeight };
+    dpr = Math.min(2, devicePixelRatio || 1);
+    W = cv.width = Math.round(r.width * dpr);
+    H = cv.height = Math.round(r.height * dpr);
+  };
+  const TILT = -0.38, ct = Math.cos(TILT), stl = Math.sin(TILT);
+  const proj = (lat, lon, R, cx, cy) => {
+    const x0 = Math.cos(lat) * Math.sin(lon + rot), y0 = Math.sin(lat), z0 = Math.cos(lat) * Math.cos(lon + rot);
+    const y1 = y0 * ct - z0 * stl, z1 = y0 * stl + z0 * ct;
+    return [cx + R * x0, cy - R * y1, z1];
+  };
+  const draw = () => {
+    if (!W) return;
+    const R = Math.min(W, H) * .4, cx = W / 2, cy = H / 2;
+    cx2.clearRect(0, 0, W, H);
+    // 本物の球（斜めの帯で広がっていく）
+    if (P > .002) {
+      cx2.save();
+      const x0 = cx - R * 1.5 + R * 3 * P;
+      cx2.beginPath();
+      cx2.moveTo(cx - R * 2, cy - R * 2); cx2.lineTo(x0 + R * .6, cy - R * 2); cx2.lineTo(x0 - R * .6, cy + R * 2); cx2.lineTo(cx - R * 2, cy + R * 2);
+      cx2.closePath(); cx2.clip();
+      const g = cx2.createRadialGradient(cx - R * .38, cy - R * .42, R * .04, cx, cy, R);
+      g.addColorStop(0, '#f8ffc8'); g.addColorStop(.28, '#e2ff4d'); g.addColorStop(.62, '#a7c400'); g.addColorStop(.9, '#3d4d00'); g.addColorStop(1, '#1b2200');
+      cx2.fillStyle = g;
+      cx2.beginPath(); cx2.arc(cx, cy, R, 0, Math.PI * 2); cx2.fill();
+      const hl = cx2.createRadialGradient(cx - R * .42, cy - R * .5, 0, cx - R * .42, cy - R * .5, R * .35);
+      hl.addColorStop(0, 'rgba(255,255,255,.75)'); hl.addColorStop(1, 'rgba(255,255,255,0)');
+      cx2.fillStyle = hl;
+      cx2.beginPath(); cx2.arc(cx, cy, R, 0, Math.PI * 2); cx2.fill();
+      cx2.restore();
+    }
+    // 線の球（前は明るく、奥は薄く。完成に近づくほど線は引く）
+    const front = new Path2D(), back = new Path2D();
+    const seg = (path, a, b) => { path.moveTo(a[0], a[1]); path.lineTo(b[0], b[1]); };
+    for (let k = 0; k < 12; k++) {
+      const lon = k / 12 * Math.PI * 2;
+      let prev = proj(-Math.PI / 2, lon, R, cx, cy);
+      for (let s = 1; s <= 36; s++) {
+        const cur = proj(-Math.PI / 2 + Math.PI * s / 36, lon, R, cx, cy);
+        seg((prev[2] + cur[2]) > 0 ? front : back, prev, cur);
+        prev = cur;
+      }
+    }
+    for (let j = -3; j <= 3; j++) {
+      const lat = j * Math.PI / 9;
+      let prev = proj(lat, 0, R, cx, cy);
+      for (let s = 1; s <= 64; s++) {
+        const cur = proj(lat, Math.PI * 2 * s / 64, R, cx, cy);
+        seg((prev[2] + cur[2]) > 0 ? front : back, prev, cur);
+        prev = cur;
+      }
+    }
+    cx2.lineWidth = 1 * dpr;
+    cx2.strokeStyle = `rgba(247,247,242,${(.1 * (1 - P)).toFixed(3)})`; cx2.stroke(back);
+    cx2.strokeStyle = `rgba(247,247,242,${(.62 - .42 * P).toFixed(3)})`; cx2.stroke(front);
+    // 赤道は黄緑
+    const eq = new Path2D();
+    let prev = proj(0, 0, R, cx, cy);
+    for (let s = 1; s <= 96; s++) { const cur = proj(0, Math.PI * 2 * s / 96, R, cx, cy); if ((prev[2] + cur[2]) > 0) seg(eq, prev, cur); prev = cur; }
+    cx2.lineWidth = 1.8 * dpr; cx2.strokeStyle = 'rgba(212,255,0,.9)'; cx2.stroke(eq);
+    // 相談が吸い込まれた瞬間の光
+    if (kvFlash > .01) {
+      const fl = cx2.createRadialGradient(cx, cy, R * .2, cx, cy, R * 1.25);
+      fl.addColorStop(0, `rgba(212,255,0,${(.32 * kvFlash).toFixed(3)})`);
+      fl.addColorStop(1, 'rgba(212,255,0,0)');
+      cx2.fillStyle = fl;
+      cx2.beginPath(); cx2.arc(cx, cy, R * 1.25, 0, Math.PI * 2); cx2.fill();
+    }
+    // 球の上の実績（情報を伝える）
+    pins.forEach(pin => {
+      const p = proj(+pin.dataset.lat * Math.PI / 180, +pin.dataset.lon * Math.PI / 180, R, cx, cy);
+      pin.style.transform = `translate3d(${(p[0] / dpr - 4).toFixed(1)}px,${(p[1] / dpr - 9).toFixed(1)}px,0)`;
+      pin.style.opacity = p[2] > .05 ? (Math.min(1, p[2] * 2.2) * pinK).toFixed(2) : 0;
+    });
+    const pct = Math.round(P * 100);
+    stateEl.textContent = (pct >= 99 ? '公開' : pct >= 62 ? '仕上げ中' : pct >= 24 ? '制作中' : '設計中') + ' ' + pct + '%';
+  };
+  let last = performance.now();
+  const loop = now => {
+    const dt = Math.min(64, now - last); last = now;
+    if (!reduce) rot += dt * .00018;
+    P += (targetP - P) * (reduce ? 1 : Math.min(1, dt * .006));
+    draw();
+    drawRing(dt);
+    requestAnimationFrame(loop);
+  };
+
+  // KV：球のまわりを相談の言葉が回り、スクロールで吸い込まれて形になる
+  const kvEl = document.querySelector('.kv');
+  const ringCv = document.getElementById('ring');
+  const rc = ringCv.getContext('2d');
+  const madeEls = [...document.querySelectorAll('.kv-made .made')];
+  const pulseEl = document.querySelector('.kv-pulse');
+  const kvHead = document.querySelector('.kv-head');
+  let headRect = null;
+  const NEEDS = ['まず動くものを見たい', '今ある作業をラクにしたい', 'AIを組み込みたいけど何から始めれば', '技術的なことは任せたい', '予算は限られてる', '完成イメージは伝えにくい', 'タスク管理をおもしろく', '投稿文を毎回考えるのがしんどい', '商談前の企業調査を早く'];
+  let kvP = 0, kvFlash = 0, ringRot = 0, rW = 0, rH = 0, rdpr = 1, pulsed = false;
+  const clamp01 = v => Math.min(1, Math.max(0, v));
+  const easeInOut = t => t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2;
+  const easeOut = t => 1 - Math.pow(1 - t, 3);
+  const isSP = () => innerWidth <= 760;
+  const ringResize = () => { rdpr = Math.min(2, devicePixelRatio || 1); rW = ringCv.width = Math.round(innerWidth * rdpr); rH = ringCv.height = Math.round(innerHeight * rdpr); };
+  const kvCenter = () => [innerWidth / 2, innerHeight * (isSP() ? .52 : .56)];
+  const placeCore = () => {
+    const base = coreEl.offsetWidth;
+    const [cxK, cyK] = kvCenter();
+    let pageSize, cxP, cyP;
+    if (isSP()) { pageSize = innerWidth * 1.12; cxP = innerWidth * .9; cyP = innerHeight * .4; }
+    else { pageSize = Math.min(innerWidth * .46, 640); cxP = innerWidth - Math.max(-80, Math.min(innerWidth * .04, 110)) - pageSize / 2; cyP = innerHeight / 2; }
+    const t = easeInOut(clamp01((kvP - .8) / .2));
+    const cx = cxK + (cxP - cxK) * t, cy = cyK + (cyP - cyK) * t, sc = 1 + (pageSize / base - 1) * t;
+    coreEl.style.transform = `translate3d(${(cx - base / 2).toFixed(1)}px,${(cy - base / 2).toFixed(1)}px,0) scale(${sc.toFixed(4)})`;
+  };
+  const drawWord = (o, k) => {
+    const front = (o.z + 1) / 2;
+    const fs = (isSP() ? 11 : 15) * (.75 + .45 * front) * (.45 + .55 * k);
+    rc.font = `700 ${(fs * rdpr).toFixed(1)}px "Zen Kaku Gothic New", sans-serif`;
+    const tw = rc.measureText(o.w).width;
+    const inHead = headRect && o.x > headRect.left - 12 && o.x < headRect.right + 12 && o.y > headRect.top - 8 && o.y < headRect.bottom + 8;
+    const alpha = (o.z < 0 ? .38 : .95) * Math.pow(k, .6) * (inHead ? .16 : 1);
+    const halfW = tw / rdpr / 2;
+    const x = Math.min(innerWidth - halfW - 10, Math.max(halfW + 22, o.x)) * rdpr, y = o.y * rdpr;
+    rc.fillStyle = `rgba(212,255,0,${alpha.toFixed(3)})`;
+    rc.beginPath(); rc.arc(x - tw / 2 - 9 * rdpr, y - fs * .32 * rdpr, 3.2 * rdpr * (.6 + .4 * front), 0, Math.PI * 2); rc.fill();
+    rc.fillStyle = `rgba(247,247,242,${alpha.toFixed(3)})`;
+    rc.textAlign = 'center'; rc.textBaseline = 'alphabetic';
+    rc.fillText(o.w, x, y);
+  };
+  const drawRing = dt => {
+    if (!rW) return;
+    rc.clearRect(0, 0, rW, rH);
+    headRect = kvHead.getBoundingClientRect();
+    if (kvEl.getBoundingClientRect().bottom < 0) return;
+    const [cxK, cyK] = kvCenter();
+    const discR = coreEl.offsetWidth * .4;
+    const k = 1 - easeInOut(clamp01((kvP - .12) / .42));
+    if (!reduce) ringRot += dt * (.00011 / (.22 + k));
+    if (k <= .02) return;
+    const sp = isSP();
+    const rx = (sp ? innerWidth * .27 : Math.min(innerWidth * .46, discR * 2)) * k;
+    const ry = discR * (sp ? .62 : .42) * k;
+    const tilt = -6 * Math.PI / 180, ctl = Math.cos(tilt), stl2 = Math.sin(tilt);
+    const toScreen = a => { const x = rx * Math.cos(a), y = ry * Math.sin(a); return [cxK + x * ctl - y * stl2, cyK + x * stl2 + y * ctl, Math.sin(a)]; };
+    const drawOrbit = front => {
+      rc.beginPath();
+      for (let i = 0; i <= 120; i++) { const a = (front ? 0 : Math.PI) + Math.PI * i / 120; const q = toScreen(a); if (i) rc.lineTo(q[0] * rdpr, q[1] * rdpr); else rc.moveTo(q[0] * rdpr, q[1] * rdpr); }
+      rc.strokeStyle = `rgba(212,255,0,${((front ? .45 : .18) * k).toFixed(3)})`;
+      rc.lineWidth = rdpr; rc.setLineDash([2 * rdpr, 7 * rdpr]); rc.stroke(); rc.setLineDash([]);
+    };
+    const list = sp ? NEEDS.slice(0, 6) : NEEDS;
+    const words = list.map((w, i) => { const q = toScreen(ringRot + i * Math.PI * 2 / list.length); return { w, x: q[0], y: q[1], z: q[2] }; }).sort((a, b) => a.z - b.z);
+    rc.save();
+    rc.beginPath(); rc.rect(0, 0, rW, rH); rc.arc(cxK * rdpr, cyK * rdpr, discR * .98 * rdpr, 0, Math.PI * 2, true); rc.clip('evenodd');
+    drawOrbit(false);
+    words.filter(o => o.z < 0).forEach(o => drawWord(o, k));
+    rc.restore();
+    drawOrbit(true);
+    words.filter(o => o.z >= 0).forEach(o => drawWord(o, k));
+  };
+  const updateKv = () => {
+    const r = kvEl.getBoundingClientRect(), total = kvEl.offsetHeight - innerHeight;
+    kvP = total > 0 ? clamp01(-r.top / total) : 1;
+    kvFlash = Math.max(0, 1 - Math.abs(kvP - .53) / .09);
+    placeCore();
+    const [cxK, cyK] = kvCenter();
+    const discR = coreEl.offsetWidth * .4;
+    const targets = isSP() ? [[.3, .15], [.7, .24], [.5, .66]] : [[.17, .3], [.85, .56], [.19, .7]];
+    madeEls.forEach((el, j) => {
+      const e = easeOut(clamp01((kvP - (.52 + j * .07)) / .18));
+      const tx = cxK + (targets[j][0] * innerWidth - cxK) * e, ty = cyK + (targets[j][1] * innerHeight - cyK) * e;
+      el.style.opacity = e.toFixed(3);
+      el.style.filter = `blur(${(12 * (1 - e)).toFixed(1)}px)`;
+      el.style.transform = `translate3d(${tx.toFixed(1)}px,${ty.toFixed(1)}px,0) translate(-50%,-50%) scale(${(.3 + .7 * e).toFixed(3)})`;
+    });
+    if (kvP > .5 && !pulsed) { pulsed = true; pulseEl.style.left = cxK + 'px'; pulseEl.style.top = cyK + 'px'; pulseEl.classList.remove('on'); void pulseEl.offsetWidth; pulseEl.classList.add('on'); }
+    if (kvP < .44) pulsed = false;
+  };
+
+  // 出てくる動き（基準5）
+  const io = new IntersectionObserver(es => es.forEach(e => {
+    if (!e.isIntersecting) return;
+    e.target.classList.add('on');
+    io.unobserve(e.target);
+  }), { threshold: .12, rootMargin: '0px 0px -6% 0px' });
+  document.querySelectorAll('main section:not(.kv)').forEach(sc => {
+    sc.querySelectorAll('.r').forEach((n, i) => { n.style.transitionDelay = (Math.min(i, 5) * .08).toFixed(2) + 's'; io.observe(n); });
+  });
+  const daysIo = new IntersectionObserver(es => es.forEach(e => { if (e.isIntersecting) { e.target.classList.add('on'); daysIo.unobserve(e.target); } }), { threshold: .3 });
+  document.querySelectorAll('.days').forEach(d => daysIo.observe(d));
+  const kvIn = () => document.querySelectorAll('.kv .r').forEach((n, i) => setTimeout(() => n.classList.add('on'), 200 + i * 170));
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(kvIn); else kvIn();
+
+  // 時計と進み具合（基準8）
+  const scenes = [...document.querySelectorAll('main [data-time]')];
+  const clock = document.getElementById('clock');
+  const steps = [...document.querySelectorAll('.steps li')];
+  let cur = -1;
+  const setScene = i => {
+    if (i === cur) return;
+    cur = i;
+    const s = scenes[i];
+    if (clock.textContent !== s.dataset.time) { clock.textContent = s.dataset.time; clock.classList.remove('tick'); void clock.offsetWidth; clock.classList.add('tick'); }
+    steps.forEach((l, k) => l.classList.toggle('lit', k < +s.dataset.step));
+    const st = +s.dataset.step;
+    root.style.setProperty('--core-o', [1, .3, .3, .28, .5, .62][st]);
+    pinK = st === 4 ? 1 : .35;
+  };
+
+  const kv = document.querySelector('.kv');
+  const pxs = [...document.querySelectorAll('.px')];
+  let ticking = false;
+  const onScroll = () => {
+    ticking = false;
+    const y = scrollY, max = root.scrollHeight - innerHeight;
+    const p = max > 0 ? Math.min(1, y / max) : 0;
+    updateKv();
+    targetP = Math.max(Math.min(1, Math.max(0, (p - .04) / .86)), .18 * easeOut(clamp01((kvP - .5) / .3)));
+    const kvH = kv.offsetHeight;
+
+    let idx = 0;
+    const line = innerHeight * .55;
+    scenes.forEach((s, i) => { if (s.getBoundingClientRect().top < line) idx = i; });
+    setScene(idx);
+    if (!reduce) pxs.forEach(img => {
+      const b = img.parentElement.getBoundingClientRect(), h = b.height;
+      const c = b.top + h / 2 - innerHeight / 2;
+      const t = Math.max(-h * .2, Math.min(0, -c * (+img.dataset.speed || .12) - h * .1));
+      img.style.transform = `translate3d(0,${t.toFixed(1)}px,0)`;
+    });
+    placeDots();
+  };
+  const req = () => { if (!ticking) { ticking = true; requestAnimationFrame(onScroll); } };
+  addEventListener('scroll', req, { passive: true });
+  addEventListener('resize', () => { resize(); ringResize(); req(); });
+  resize();
+  ringResize();
+  onScroll();
+  P = targetP;
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
