@@ -249,6 +249,37 @@ footer b{color:var(--lime);letter-spacing:.14em}
   .r{opacity:1 !important;transform:none !important;filter:none !important}
   .bar{transform:none !important}
 }
+
+/* ===== 相談の球（チャットボット・v1） ===== */
+#cb-btn{position:fixed;right:22px;bottom:22px;z-index:40;width:64px;height:64px;border-radius:50%;border:none;background:radial-gradient(circle at 35% 35%,#e8ff5a,#d4ff00 55%,#a8c800 100%);box-shadow:0 0 34px rgba(212,255,0,.55),0 10px 24px rgba(0,0,0,.35);cursor:pointer;transition:transform .3s var(--ease),box-shadow .3s;animation:cbp 2.4s ease-in-out infinite;display:flex;align-items:center;justify-content:center}
+#cb-btn:hover{transform:scale(1.08);box-shadow:0 0 44px rgba(212,255,0,.75),0 10px 30px rgba(0,0,0,.45)}
+#cb-btn span{display:block;width:14px;height:14px;border-radius:50%;background:#0a0a0a}
+@keyframes cbp{0%,100%{box-shadow:0 0 30px rgba(212,255,0,.5),0 10px 24px rgba(0,0,0,.35)}50%{box-shadow:0 0 50px rgba(212,255,0,.85),0 10px 24px rgba(0,0,0,.35)}}
+#cb{position:fixed;right:22px;bottom:22px;z-index:41;width:min(360px,calc(100vw - 24px));height:min(520px,calc(100vh - 44px));display:none;flex-direction:column;border-radius:20px;background:rgba(10,10,10,.94);border:1px solid rgba(212,255,0,.45);box-shadow:0 30px 70px rgba(0,0,0,.6),0 0 60px rgba(212,255,0,.18);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);overflow:hidden;font-family:"Zen Kaku Gothic New","Hiragino Sans","Yu Gothic",sans-serif}
+#cb.open{display:flex}
+#cb header{display:flex;align-items:center;gap:.7rem;padding:14px 18px;border-bottom:1px solid rgba(212,255,0,.2)}
+#cb header i{width:12px;height:12px;border-radius:50%;background:var(--lime);box-shadow:0 0 12px var(--lime)}
+#cb header b{font-size:.92rem;letter-spacing:.14em;color:var(--white)}
+#cb header small{font-family:"Syne",sans-serif;font-size:.66rem;letter-spacing:.2em;color:var(--lime);margin-left:auto}
+#cb-x{background:none;border:none;color:var(--muted);font-size:1.4rem;line-height:1;cursor:pointer;padding:0 0 0 10px;transition:color .2s}
+#cb-x:hover{color:var(--lime)}
+#cb-log{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px;scroll-behavior:smooth}
+#cb-log::-webkit-scrollbar{width:6px}
+#cb-log::-webkit-scrollbar-thumb{background:rgba(212,255,0,.28);border-radius:3px}
+.cb-m{max-width:86%;padding:10px 14px;border-radius:14px;font-size:.86rem;line-height:1.7;letter-spacing:.02em;word-break:auto-phrase;text-wrap:pretty}
+.cb-m a{color:var(--lime);text-decoration:underline;text-underline-offset:2px}
+.cb-m.b{align-self:flex-start;background:rgba(212,255,0,.08);border:1px solid rgba(212,255,0,.28);color:var(--white)}
+.cb-m.u{align-self:flex-end;background:var(--lime);color:#0a0a0a;font-weight:500}
+#cb-form{display:flex;gap:8px;padding:12px 14px;border-top:1px solid rgba(212,255,0,.2)}
+#cb-in{flex:1;background:rgba(247,247,242,.06);border:1px solid rgba(247,247,242,.14);border-radius:12px;padding:10px 14px;color:var(--white);font-family:inherit;font-size:.9rem;outline:none;transition:border-color .2s}
+#cb-in:focus{border-color:rgba(212,255,0,.5)}
+#cb-in::placeholder{color:var(--muted)}
+#cb-form button{width:42px;height:42px;border-radius:12px;border:none;background:var(--lime);color:#0a0a0a;font-size:1.1rem;line-height:1;cursor:pointer;transition:transform .2s,box-shadow .2s;font-weight:700}
+#cb-form button:hover{transform:translateY(-1px);box-shadow:0 6px 16px rgba(212,255,0,.35)}
+@media (max-width:760px){
+  #cb-btn{right:16px;bottom:82px;width:56px;height:56px}
+  #cb{right:12px;left:12px;bottom:82px;width:auto;height:min(72vh,520px)}
+}
 </style>
 <noscript><style>.r{opacity:1;transform:none;filter:none}.bar{transform:none}</style></noscript>
 </head>
@@ -399,6 +430,16 @@ footer b{color:var(--lime);letter-spacing:.14em}
 <footer><b>初速制作室</b><span>LP・Webアプリ・業務ツール | AI制作</span><span>© 2026</span></footer>
 
 <nav class="actbar" aria-label="すぐに押せる案内"><a href="#contact">制作を依頼する</a><a href="#t2100">実績を見る</a></nav>
+
+<button id="cb-btn" aria-label="相談の球を開く"><span></span></button>
+<aside id="cb" aria-hidden="true" aria-label="相談の球">
+  <header><i></i><b>相談の球</b><small>v1</small><button id="cb-x" aria-label="閉じる">×</button></header>
+  <div id="cb-log"></div>
+  <form id="cb-form" autocomplete="off">
+    <input id="cb-in" type="text" placeholder="聞きたいことを打つ…" aria-label="質問">
+    <button type="submit" aria-label="送る">➤</button>
+  </form>
+</aside>
 
 <script>
 (() => {
@@ -697,6 +738,88 @@ footer b{color:var(--lime);letter-spacing:.14em}
   onScroll();
   P = targetP;
   requestAnimationFrame(loop);
+})();
+</script>
+
+<script>
+/* 相談の球（v2・Claude API経由）— 元ネタ：projects/初速制作室/チャットボット/知識v1.md */
+(() => {
+  const WORKER = 'https://shosoku-chat.tanaka264839.workers.dev';
+  const btn = document.getElementById('cb-btn');
+  const box = document.getElementById('cb');
+  const closeBtn = document.getElementById('cb-x');
+  const log = document.getElementById('cb-log');
+  const form = document.getElementById('cb-form');
+  const input = document.getElementById('cb-in');
+  const submitBtn = form.querySelector('button');
+  let opened = false;
+
+  const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  const fmt = t => esc(t)
+    .replace(/https?:\/\/[^\s<>"]+/g, m => `<a href="${m}" target="_blank" rel="noopener">${m}</a>`)
+    .replace(/\n/g, '<br>');
+
+  const say = (t, who) => {
+    const el = document.createElement('div');
+    el.className = 'cb-m ' + who;
+    el.innerHTML = who === 'b' ? fmt(t) : esc(t);
+    log.appendChild(el);
+    log.scrollTop = log.scrollHeight;
+    return el;
+  };
+
+  const FALLBACK = '返答が取れませんでした。相談窓口はココナラ https://coconala.com/users/3389958 へどうぞ。';
+
+  const ask = async q => {
+    try {
+      const res = await fetch(WORKER, {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ q }),
+      });
+      if (!res.ok) throw new Error('status ' + res.status);
+      const data = await res.json();
+      return data.answer || FALLBACK;
+    } catch (e) {
+      console.error('cb error:', e);
+      return FALLBACK;
+    }
+  };
+
+  const open = () => {
+    box.classList.add('open');
+    box.setAttribute('aria-hidden', 'false');
+    btn.style.display = 'none';
+    if(!opened){
+      opened = true;
+      setTimeout(() => say('相談の球です。田中の作り方・料金・実績、聞きたいことをどうぞ。', 'b'), 200);
+    }
+    setTimeout(() => input.focus(), 120);
+  };
+  const close = () => {
+    box.classList.remove('open');
+    box.setAttribute('aria-hidden', 'true');
+    btn.style.display = '';
+  };
+
+  btn.addEventListener('click', open);
+  closeBtn.addEventListener('click', close);
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const q = input.value.trim();
+    if(!q) return;
+    say(q, 'u');
+    input.value = '';
+    input.disabled = true;
+    submitBtn.disabled = true;
+    const thinking = say('…', 'b');
+    const a = await ask(q);
+    thinking.remove();
+    say(a, 'b');
+    input.disabled = false;
+    submitBtn.disabled = false;
+    input.focus();
+  });
 })();
 </script>
 </body>
