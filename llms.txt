@@ -1,6 +1,6 @@
 # 初速制作室
 
-> AIと一緒に、LP・Webアプリ・業務ツール・AI機能を作る個人の制作室です。運営は田中（事務職19年）。聞き取りから設計・実装・公開・保守まで一人で担当します。
+> AIと一緒に、LP・Webアプリ・業務ツール・AI機能を作る個人の制作室です。運営は田中（事務職19年）。聞き取りから設計・実装・公開・保守まで一人で担当します。開発には生成AI（Claude Code・Codex）を使い、何を作るか・設計・確認は自分で行います。
 
 ## サービス（目安の料金）
 
@@ -12,6 +12,9 @@
 ## 作品
 
 - [ポートフォリオ（作品ごとの担当範囲・役割・使った技術）](https://robust-brisket-b41.notion.site/5a96514f6ecd8273bd028122ad20f471)
+- 運送会社の業務システム（受託）：Google スプレッドシートと Google Apps Script で、電話受付から予定表・台帳・依頼メールの下書きまでを一つの仕組みに。2026年10月から本番運用中・保守を継続（お客様の名前・画面は非公開）
+- 帳票OCRの業務ツール：請求書・日報など紙の帳票の写真やPDFをAIで読み取り、人が確認・承認した分だけExcelに出す（Python・Azure AI Document Intelligence・Claude）
+- [接骨院向けAIチャットボット（LINE でよくある質問への回答と予約の受付・確認を24時間。LINE Messaging API・Claude API）](https://youtu.be/GTTvPerFMgY)
 - [StepLock（歩いた分だけスマホが使える Android アプリ・Google Play で公開中）](https://play.google.com/store/apps/details?id=com.shosoku.steplock)
 - [関西弁ToDoアプリ](https://kansai-todo.vercel.app/)
 - [いっちょうあがり](https://icchoagari.vercel.app)

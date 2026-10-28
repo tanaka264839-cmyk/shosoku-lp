@@ -124,13 +124,15 @@
     "https://coconala.com/users/3389958"
    ],
    "knowsAbout": [
-    "業務の自動化",
+    "業務ツール・自動化",
     "生成AI",
     "Google Apps Script",
     "Python",
-    "Kotlin",
+    "OCR",
     "LINEボット",
-    "Webアプリ制作"
+    "Claude Code",
+    "Webアプリ制作",
+    "Androidアプリ"
    ]
   },
   {
@@ -458,6 +460,7 @@ footer b{color:var(--lime);letter-spacing:.14em}
   #cb{right:12px;left:12px;bottom:82px;width:auto;height:min(72vh,520px)}
 }
 .op{flex-basis:100%;margin:0;font-size:.75rem;line-height:1.7;color:var(--muted)}.op a{color:inherit;text-decoration:underline}
+.biz{display:flex;flex-direction:column;gap:2rem}.biz-h{font-weight:900;font-size:clamp(1.6rem,3vw,2.8rem);line-height:1.3;word-break:auto-phrase;text-wrap:balance}.biz-lead{color:var(--muted);max-width:46em;word-break:auto-phrase;text-wrap:pretty}.biz-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1.4rem}.biz-card{display:flex;flex-direction:column;gap:.7rem;padding:1.6rem 1.5rem;border:1px solid var(--line);border-radius:18px;background:rgba(10,10,10,.55)}.biz-card .tag{font-size:.78rem;letter-spacing:.2em;color:var(--lime)}.biz-card h4{font-weight:900;font-size:clamp(1.25rem,1.8vw,1.6rem);line-height:1.35;word-break:auto-phrase;text-wrap:balance}.biz-card p{color:var(--muted);word-break:auto-phrase;text-wrap:pretty}.biz-card .biz-meta{font-size:.82rem;line-height:1.7}.biz .links{display:flex;flex-wrap:wrap;gap:1.4rem}.biz .links a{padding-bottom:.2rem;border-bottom:1px solid rgba(212,255,0,.5);color:var(--lime);text-decoration:none;font-weight:700;letter-spacing:.08em}@media (max-width:960px){.biz-list{grid-template-columns:1fr}}
 </style>
 <noscript><style>.r{opacity:1;transform:none;filter:none}.bar{transform:none}</style></noscript>
 </head>
@@ -577,6 +580,38 @@ footer b{color:var(--lime);letter-spacing:.14em}
         <div class="shots bot r" aria-hidden="true"><span class="orb"></span><span class="word">LINE</span><span class="fee">無料3回 → 月額980円</span></div>
         <div class="r"><p class="tag">LINEボット</p><h3>商談まえだ</h3><p>企業調査AIアシスタント。LINE上で動き、無料3回→月額980円のStripe課金。1日で設計〜本番稼働まで完走。</p><div class="links"><a href="https://line.me/R/ti/p/@572qmolf" target="_blank" rel="noopener">LINEで見る</a><a href="https://github.com/tanaka264839-cmyk/shodan-maeda" target="_blank" rel="noopener">GitHub</a></div></div>
       </article>
+      <div class="biz">
+        <h3 class="biz-h r">1日では終わらない、<br>業務の仕組みも。</h3>
+        <p class="biz-lead r">どれも、私ひとりで担当しました（担当した工程は作品ごとに書いています）。開発には生成AI（Claude Code・Codex）を使い、何を作るか・設計・確認は私が行います。</p>
+        <div class="biz-list">
+          <article class="biz-card r">
+            <p class="tag">業務の仕組み｜受託</p>
+            <h4>運送会社の業務システム</h4>
+            <p>Google スプレッドシートと Google Apps Script（GAS）で、電話受付・依頼書・番号の自動振り分け・ドライバーの予定表・台帳・依頼メールの下書きを一連の仕組みにしました。2026年10月から本番運用中で、今も保守を続けています。</p>
+            <p class="biz-meta">担当：聞き取り・要件整理・設計・開発・確認・本番への切り替え・保守</p>
+            <p class="biz-meta">規模：要望と質問100件超／本番の版を10日あまりで60回／自動テスト約400本</p>
+            <p class="biz-meta">技術：Google Apps Script・JavaScript・Google スプレッドシート・Gmail</p>
+            <p class="biz-meta">お客様の名前・画面は、守秘のため載せていません。</p>
+          </article>
+          <article class="biz-card r">
+            <p class="tag">書類の読み取り｜自主開発</p>
+            <h4>帳票OCRの業務ツール</h4>
+            <p>請求書・日報など紙の帳票の写真やPDFをAIで読み取り、人が原票と見比べて確認・承認した分だけExcelに出します。直した内容から次の読み取りの補正ルール候補を作り、人が承認した物だけ使います。</p>
+            <p class="biz-meta">担当：要件整理・設計・開発・確認</p>
+            <p class="biz-meta">確認：架空の運転日報5件で必須9項目を9/9読み取り／自動テスト69件（実データでの運用はまだ）</p>
+            <p class="biz-meta">技術：Python・Streamlit・SQLite・Azure AI Document Intelligence・Claude</p>
+          </article>
+          <article class="biz-card r">
+            <p class="tag">AIの組み込み｜お渡し済み</p>
+            <h4>接骨院向けAIチャットボット</h4>
+            <p>LINEで、よくある質問への回答と予約の受付・確認を24時間行い、答えられない内容はスタッフへ知らせます。接骨院向けに作り、お渡ししました。</p>
+            <p class="biz-meta">担当：聞き取り・要件整理・設計・開発・確認・導入</p>
+            <p class="biz-meta">技術：LINE Messaging API・Claude API・Node.js・Render</p>
+            <div class="links"><a href="https://youtu.be/GTTvPerFMgY" target="_blank" rel="noopener">動画を見る</a></div>
+          </article>
+        </div>
+        <div class="links r"><a href="https://robust-brisket-b41.notion.site/5a96514f6ecd8273bd028122ad20f471" target="_blank" rel="noopener">ポートフォリオで詳しく見る</a></div>
+      </div>
       <div class="soon r"><p>あなたのプロジェクトが次の実績になるかもしれません。</p><a class="btn btn-line" href="#contact">相談してみる</a></div>
     </div>
   </section>
