@@ -1,0 +1,26 @@
+# 初速制作室
+
+> AIと一緒に、LP・Webアプリ・業務ツール・AI機能を作る個人の制作室です。運営は田中（事務職19年）。聞き取りから設計・実装・公開・保守まで一人で担当します。
+
+## サービス（目安の料金）
+
+- Webアプリ制作：¥50,000〜 / 1案件
+- LP・サービスサイト制作：¥15,000〜 / 初回限定（通常 ¥30,000〜）
+- 業務ツール・自動化：¥30,000〜 / 1件
+- AI機能の組み込み：¥40,000〜 / 1機能
+
+## 作品
+
+- [ポートフォリオ（作品ごとの担当範囲・役割・使った技術）](https://robust-brisket-b41.notion.site/5a96514f6ecd8273bd028122ad20f471)
+- [StepLock（歩いた分だけスマホが使える Android アプリ・Google Play で公開中）](https://play.google.com/store/apps/details?id=com.shosoku.steplock)
+- [関西弁ToDoアプリ](https://kansai-todo.vercel.app/)
+- [いっちょうあがり](https://icchoagari.vercel.app)
+
+## 連絡・プロフィール
+
+- [ココナラ](https://coconala.com/users/3389958)
+- [クラウドワークス](https://crowdworks.jp/public/employees/6328211)
+- [ランサーズ](https://www.lancers.jp/profile/tanaka_hagatatsu01)
+- [X](https://x.com/EJ6aNsgkA127548)
+- [note](https://note.com/tanaka_hagatatsu)
+- [GitHub](https://github.com/tanaka264839-cmyk)
