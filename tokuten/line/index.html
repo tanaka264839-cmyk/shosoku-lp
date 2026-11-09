@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LINEで特典を受け取る｜初速制作室</title>
+<!-- インスタのプロフィールのリンク先（LINE への入口）。LINE の入口が変わったら、下の LINE の URL だけを直す（手順「外に出すURLを短縮URLにして、止まった日に遷移先だけ差し替える」）。検索には出さない -->
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="「スマホのAIに、お店の『返事係』を覚えさせる手順」を、LINEの友だち追加でお渡ししています。">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="初速制作室">
+<meta property="og:title" content="LINEで特典を受け取る｜初速制作室">
+<meta property="og:description" content="「スマホのAIに、お店の『返事係』を覚えさせる手順」を、LINEの友だち追加でお渡ししています。">
+<meta property="og:url" content="https://tanaka264839-cmyk.github.io/shosoku-lp/tokuten/line/">
+<meta property="og:locale" content="ja_JP">
+<style>
+:root{--bg:#f3f4f1;--surface:#ffffff;--ink:#0a0a0a;--muted:#55594f;--line:#dcdfd6;--green:#06c755;--green-ink:#ffffff}
+@media (prefers-color-scheme: dark){
+  :root{--bg:#0a0a0a;--surface:#151614;--ink:#f3f4f1;--muted:#a7aba1;--line:#2b2d29}
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic","Noto Sans JP",sans-serif;font-size:16px;line-height:1.85;overflow-wrap:anywhere}
+main{max-width:480px;margin:0 auto;padding:48px 16px 40px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:24px 20px}
+.brand{font-weight:900;letter-spacing:.12em;font-size:.85rem;color:var(--muted);margin:0 0 8px}
+h1{font-size:1.35rem;line-height:1.5;margin:0 0 12px;font-weight:900}
+p{margin:0 0 20px}
+a.btn{display:block;text-align:center;background:var(--green);color:var(--green-ink);text-decoration:none;font-weight:900;letter-spacing:.04em;padding:16px;border-radius:999px;font-size:1.05rem}
+.note{font-size:.85rem;color:var(--muted);margin:16px 0 0}
+</style>
+</head>
+<body>
+<main>
+  <div class="card">
+    <p class="brand">初速制作室</p>
+    <h1>LINEで特典を受け取る</h1>
+    <p>「スマホのAIに、お店の『返事係』を覚えさせる手順」を、LINEの友だち追加でお渡ししています。</p>
+    <!-- LINE の友だち追加。@ はそのまま書く（%40 の形は iPad の LINE で時々エラーになった。2026-11-09） -->
+    <a class="btn" id="go" href="https://line.me/R/ti/p/@316lltbw">LINEで友だち追加する</a>
+    <p class="note">LINEが開かない時は、LINEの友だち検索で「@316lltbw」を探してください。</p>
+  </div>
+</main>
+<script>
+// 開いたら LINE の友だち追加へ移る。戻るで行き来しないよう replace にする。移らない時は上のボタン
+(function(){
+  var go = document.getElementById('go');
+  if (!go) return;
+  setTimeout(function(){ try { location.replace(go.href); } catch (e) {} }, 400);
+})();
+</script>
+</body>
+</html>
