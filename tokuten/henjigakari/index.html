@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>返事係の手順｜初速制作室</title>
+<!-- LINE の友だちに渡す特典。検索には出さない（URL は LINE の中だけで渡す） -->
+<meta name="robots" content="noindex, nofollow">
+<meta name="description" content="予約の返事・来店のお礼・日にちの変更。毎日の返事の文を、お店の言い方で、貼るだけで作れるようにします。全5ステップ・30分ほど。">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="初速制作室">
+<meta property="og:title" content="スマホのAIに、お店の「返事係」を覚えさせる手順">
+<meta property="og:description" content="予約の返事・来店のお礼・日にちの変更。毎日の返事の文を、お店の言い方で、貼るだけで作れるようにします。全5ステップ・30分ほど。">
+<meta property="og:url" content="https://tanaka264839-cmyk.github.io/shosoku-lp/tokuten/henjigakari/">
+<meta property="og:locale" content="ja_JP">
+<meta name="twitter:card" content="summary">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Kaku+Gothic+New:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#f3f4f1;--surface:#ffffff;--ink:#0a0a0a;--muted:#55594f;--line:#dcdfd6;
+  --accent:#d4ff00;--accent-ink:#0a0a0a;
+  --code-bg:#141613;--code-ink:#f3f4f1;
+  --ok-bg:#f5ffd6;--ok-line:#a8cc00;
+  --note-bg:#eceee8;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#0a0a0a;--surface:#151614;--ink:#f3f4f1;--muted:#a7aba1;--line:#2b2d29;
+    --code-bg:#1e211c;--code-ink:#f3f4f1;
+    --ok-bg:#1c2110;--ok-line:#7d9900;
+    --note-bg:#1a1c18;
+  }
+}
+*,*::before,*::after{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;scroll-padding-top:64px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Zen Kaku Gothic New","Hiragino Sans","Hiragino Kaku Gothic ProN","Yu Gothic","Noto Sans JP",sans-serif;font-size:16px;line-height:1.85;-webkit-font-smoothing:antialiased;overflow-wrap:anywhere}
+a{color:inherit}
+p{margin:0 0 .6em}
+ul,ol{margin:0;padding-left:1.4em}
+li{margin:.25em 0}
+.wrap{max-width:640px;margin:0 auto;padding:0 16px}
+
+/* 上の帯：屋号と進み具合（0/5 完了） */
+.bar{position:sticky;top:0;z-index:10;background:var(--bg);border-bottom:1px solid var(--line)}
+.bar .wrap{display:flex;align-items:center;gap:12px;height:52px}
+.logo{display:flex;align-items:center;gap:8px;font-weight:900;letter-spacing:.12em;font-size:.9rem;white-space:nowrap}
+.logo i{width:10px;height:10px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 2px var(--ink)}
+.prog{margin-left:auto;display:flex;align-items:center;gap:10px;font-size:.85rem;font-weight:700;white-space:nowrap}
+.meter{width:84px;height:8px;border-radius:99px;background:var(--line);overflow:hidden}
+.meter span{display:block;height:100%;width:0;background:var(--accent);box-shadow:inset 0 0 0 1px var(--ok-line);transition:width .4s ease}
+
+/* はじめの所 */
+.hero{padding:32px 0 8px}
+.hero h1{font-size:1.6rem;line-height:1.45;font-weight:900;margin:0 0 16px;word-break:auto-phrase;text-wrap:balance}
+.lead{font-size:1.05rem;margin:0 0 20px}
+.facts{list-style:none;padding:0;margin:0 0 24px;display:grid;gap:8px}
+.facts li{margin:0;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:10px 14px;font-size:.95rem}
+.box{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px 18px 14px;margin:0 0 16px}
+.box h2{font-size:1.1rem;margin:0 0 8px;font-weight:900}
+.skip{display:block;text-align:center;padding:14px;border-radius:12px;border:1px dashed var(--muted);text-decoration:none;font-weight:700;margin:0 0 8px}
+
+/* ステップ */
+.step{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:22px 18px 18px;margin:20px 0}
+.step header{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin-bottom:14px}
+.no{display:inline-block;background:var(--accent);color:var(--accent-ink);font-weight:900;letter-spacing:.08em;font-size:.82rem;padding:3px 12px;border-radius:99px;border:1.5px solid var(--ink)}
+.step h2{font-size:1.25rem;line-height:1.5;margin:0;font-weight:900;flex-basis:100%}
+.lbl{display:block;font-weight:900;font-size:.9rem;margin:16px 0 4px}
+.lbl:first-of-type{margin-top:0}
+
+/* 写す文（コピーのボタンつき） */
+.copy{margin:14px 0;border-radius:14px;overflow:hidden;background:var(--code-bg);color:var(--code-ink)}
+.copy .cap{display:block;font-size:.8rem;font-weight:700;opacity:.75;padding:10px 14px 0}
+.copy pre{margin:0;padding:10px 14px 14px;white-space:pre-wrap;word-break:normal;overflow-wrap:anywhere;font-family:inherit;font-size:.95rem;line-height:1.75;-webkit-user-select:text;user-select:text}
+.copy button{display:block;width:100%;border:0;border-top:1px solid rgba(243,244,241,.14);background:var(--accent);color:var(--accent-ink);font:inherit;font-weight:900;font-size:1rem;letter-spacing:.06em;padding:14px;cursor:pointer}
+.copy button.done{background:#ffffff}
+.copy .msg{display:none;font-size:.85rem;padding:0 14px 12px;color:var(--code-ink)}
+.copy .msg.on{display:block}
+
+/* これが出来たらOK */
+.ok{background:var(--ok-bg);border:1.5px solid var(--ok-line);border-radius:14px;padding:14px 14px 12px;margin:16px 0}
+.ok .lbl{margin-top:0}
+.ok button{display:block;width:100%;margin-top:10px;border:1.5px solid var(--ink);background:var(--surface);color:var(--ink);font:inherit;font-weight:900;padding:12px;border-radius:12px;cursor:pointer}
+.ok button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+
+.trouble li{margin:.45em 0}
+.memo{background:var(--note-bg);border-radius:12px;padding:12px 14px;margin-top:16px;font-size:.95rem}
+.memo .lbl{margin-top:0}
+
+/* おわりの所：相談の案内 */
+.next{background:var(--ink);color:var(--bg);border-radius:20px;padding:26px 20px 22px;margin:28px 0 20px}
+.next h2{font-size:1.3rem;line-height:1.5;margin:0 0 12px;font-weight:900}
+.next p{margin:0 0 .8em}
+.cta{display:block;text-align:center;background:var(--accent);color:var(--accent-ink);text-decoration:none;font-weight:900;letter-spacing:.06em;padding:16px;border-radius:999px;margin:18px 0 8px;font-size:1.05rem}
+.cta-note{font-size:.85rem;opacity:.8;margin:0}
+footer{padding:12px 0 40px;font-size:.85rem;color:var(--muted)}
+footer a{color:var(--muted)}
+
+/* 改行の位置：見出しの最後の1文字だけが次の行に落ちないようにする（対応していない端末では普段どおり） */
+.step h2,.next h2,.box h2{word-break:auto-phrase;text-wrap:balance}
+p,li{word-break:auto-phrase;text-wrap:pretty}
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <div class="wrap">
+    <span class="logo"><i></i>初速制作室</span>
+    <span class="prog"><span id="progText">0/5 完了</span><span class="meter" aria-hidden="true"><span id="progBar"></span></span></span>
+  </div>
+</div>
+
+<main class="wrap">
+
+<section class="hero">
+  <h1>スマホのAIに、お店の「返事係」を覚えさせる手順</h1>
+  <p class="lead">予約の返事・来店のお礼・日にちの変更。<br>毎日の返事の文を、お店の言い方で、貼るだけで作れるようにします。</p>
+  <ul class="facts">
+    <li>対象：一人でお店を回している方（サロン・教室・小さなお店）</li>
+    <li>全5ステップ。スマホ（iPad でも可）だけで、無料のままでできます</li>
+    <li>所要：30分ほど（メモに書く量で前後します）</li>
+  </ul>
+  <div class="box">
+    <h2>これができるようになります</h2>
+    <ul>
+      <li>スマホで AI（ChatGPT）に話しかけられる</li>
+      <li>お店の決まりと言い方を、AI に1回で覚えさせられる</li>
+      <li>予約の問い合わせへの返事を、貼るだけで作れる</li>
+      <li>お礼・日にちの変更・キャンセルの返事も作れる</li>
+      <li>お客様の名前や電話番号を出さずに使える</li>
+    </ul>
+  </div>
+  <a class="skip" href="#step2">すでに ChatGPT を使っている方は、STEP 2 からどうぞ。</a>
+</section>
+
+<section class="step" id="step1">
+  <header><span class="no">STEP 1</span><h2>スマホに ChatGPT を入れる</h2></header>
+  <span class="lbl">なぜ必要？</span>
+  <p>返事係が座る「席」を用意するようなものです。</p>
+  <span class="lbl">やさしい説明</span>
+  <p>ChatGPT（チャットジーピーティー）は、話しかけると文を作ってくれるアプリです。無料で使えます。</p>
+  <span class="lbl">手順</span>
+  <ol>
+    <li>iPhone は App Store、Android は Google Play を開き、「ChatGPT」と探す</li>
+    <li>提供元が「OpenAI」のものを入れる</li>
+    <li>Google か Apple のアカウント、またはメールアドレスで登録する</li>
+    <li>下の1行を送ってみる</li>
+  </ol>
+  <div class="copy"><pre id="c1">こんにちは。あなたは何ができますか？</pre><button type="button" data-copy="c1">コピーする</button><span class="msg" role="status"></span></div>
+  <div class="ok">
+    <span class="lbl">これが出来たらOK</span>
+    <p>送った1行に、返事が返ってきた。</p>
+    <button type="button" data-step="1" aria-pressed="false">できたら押す</button>
+  </div>
+  <span class="lbl">こんな画面が出たら</span>
+  <ul class="trouble">
+    <li>似た名前のアプリがたくさん出る → 提供元が「OpenAI」のものを選ぶ</li>
+    <li>有料プランの案内が出る → 閉じて大丈夫。無料のまま進められます</li>
+    <li>確認のメールが届かない → 迷惑メールのフォルダを見る</li>
+    <li>それ以外で分からない画面 → 画面の写しを ChatGPT に貼って「どうすればいい？」と聞けばOK</li>
+  </ul>
+  <div class="memo"><span class="lbl">中級者向けメモ</span>文を打つのが面倒な時は、キーボードのマイクで話して入力しても大丈夫です。</div>
+</section>
+
+<section class="step" id="step2">
+  <header><span class="no">STEP 2</span><h2>お店の「返事係メモ」を作る</h2></header>
+  <span class="lbl">なぜ必要？</span>
+  <p>新しく入った人に渡す「お店の決まり」の紙と同じです。これがあると、返事係が迷いません。</p>
+  <span class="lbl">やさしい説明</span>
+  <p>返事係メモ＝お店の決まりと言い方を書いた1枚です。スマホのメモに作ります。</p>
+  <span class="lbl">手順</span>
+  <ol>
+    <li>スマホのメモ（どのメモのアプリでも可）を開く</li>
+    <li>下のひな形をそのまま貼る</li>
+    <li>【　】の所を、自分のお店のことに書き換える（分からない所は消してOK）</li>
+  </ol>
+  <div class="copy"><span class="cap">ひな形</span><pre id="c2">あなたは「【店名】」の返事係です。お客様からのメッセージに、お店の代わりに返す文を作ってください。
+
+■お店のこと
+・何のお店：【例：一人で営む美容室】
+・営業時間：【例：10時〜19時（最終受付18時）】
+・定休日：【例：毎週火曜】
+・メニューと料金：【例：カット 4,400円／カラー 6,600円〜】
+・予約の取り方：【例：希望の日時を3つ聞く】
+・キャンセル：【例：前日まで無料。当日は料金の半分】
+・場所・駐車場：【例：駅から徒歩5分。駐車場なし】
+
+■言い方
+・【例：です・ます。やわらかく。絵文字は1つまで】
+・最初は「【例：ご連絡ありがとうございます】」
+・最後は「【例：店名と自分の名前】」
+
+■決まり
+・メモに無いこと（空き状況・値引きなど）は決めつけず、「確認してご連絡します」と書く
+・返事は短く、5行まで
+・お店が確かめた方がいい所があれば、文の下に1行で書く</pre><button type="button" data-copy="c2">コピーする</button><span class="msg" role="status"></span></div>
+  <div class="ok">
+    <span class="lbl">これが出来たらOK</span>
+    <p>メモに、自分のお店の名前と営業時間が入った1枚ができた。</p>
+    <button type="button" data-step="2" aria-pressed="false">できたら押す</button>
+  </div>
+  <span class="lbl">こんな画面が出たら</span>
+  <ul class="trouble">
+    <li>全部は埋まらない → 空いた所は消してOK。あとから足せます</li>
+    <li>メニューが多くて書ききれない → よく聞かれる3つだけでOK</li>
+  </ul>
+  <div class="memo"><span class="lbl">中級者向けメモ</span>実際に送って「これは良かった」と思う返事を1〜2個、メモの最後に「お手本」として貼ると、言い方がもっとお店らしくなります。</div>
+</section>
+
+<section class="step" id="step3">
+  <header><span class="no">STEP 3</span><h2>AI に覚えさせる（プロジェクトを作る）</h2></header>
+  <span class="lbl">なぜ必要？</span>
+  <p>毎回メモを渡さなくても、返事係が決まりを覚えている状態にします。</p>
+  <span class="lbl">やさしい説明</span>
+  <p>プロジェクト＝決まりを覚えた、返事係の専用の部屋です。</p>
+  <span class="lbl">手順</span>
+  <ol>
+    <li>ChatGPT の左上のメニューを開き、「プロジェクト」から新しいプロジェクトを作る</li>
+    <li>名前は下の1行にする</li>
+    <li>プロジェクトの「指示」の欄に、STEP 2 のメモを全部貼って保存する</li>
+  </ol>
+  <div class="copy"><pre id="c3">返事係</pre><button type="button" data-copy="c3">コピーする</button><span class="msg" role="status"></span></div>
+  <div class="ok">
+    <span class="lbl">これが出来たらOK</span>
+    <p>プロジェクト「返事係」を開くと、指示の欄にメモが入っている。</p>
+    <button type="button" data-step="3" aria-pressed="false">できたら押す</button>
+  </div>
+  <span class="lbl">こんな画面が出たら</span>
+  <ul class="trouble">
+    <li>「プロジェクト」が見つからない → アプリを最新にする。それでも無い時は、毎回の最初にメモを貼ってから使えばOK（同じように動きます）</li>
+    <li>どこに貼ればいいか分からない → 画面の写しを ChatGPT に貼って聞けばOK</li>
+  </ul>
+  <div class="memo"><span class="lbl">中級者向けメモ</span>メニュー表の写真を、プロジェクトのファイルに入れておくと、料金の質問にも答えやすくなります。</div>
+</section>
+
+<section class="step" id="step4">
+  <header><span class="no">STEP 4</span><h2>予約の返事を作ってみる</h2></header>
+  <span class="lbl">なぜ必要？</span>
+  <p>いちばん多い返事で、試しに1回動かします。</p>
+  <span class="lbl">やさしい説明</span>
+  <p>届いた文を貼るだけで、返事の下書きが出ます。</p>
+  <span class="lbl">手順</span>
+  <ol>
+    <li>プロジェクト「返事係」の中で、新しいチャットを始める</li>
+    <li>お客様からの文を貼る（名前は「◯◯様」に、電話番号は消してから）</li>
+    <li>頭に「この文に返事を作って」と書いて送る</li>
+    <li>出た文を読み、直したい所を言う（例：「もう少し短く」）。OKなら、文の下にある写すボタン（四角が2つ重なった形）でコピーして、LINE などに貼って送る</li>
+  </ol>
+  <div class="copy"><pre id="c4">この文に返事を作って：「来週の土曜日の午後、カットの予約はできますか？」</pre><button type="button" data-copy="c4">コピーする</button><span class="msg" role="status"></span></div>
+  <div class="ok">
+    <span class="lbl">これが出来たらOK</span>
+    <p>予約の返事が出て、そのまま送れる形になった。</p>
+    <button type="button" data-step="4" aria-pressed="false">できたら押す</button>
+  </div>
+  <span class="lbl">こんな画面が出たら</span>
+  <ul class="trouble">
+    <li>空いているかどうかを、勝手に「空いています」と書く → メモの決まりに「空き状況は書かない」を足す</li>
+    <li>言い方が硬い → 「もっとやわらかく」と言う</li>
+    <li>長い → 「3行で」と言う</li>
+    <li>「来週の土曜日」などを、AI が日付（例：「11月14日（土）」）にして書く → 送る前に日付を確かめる。合っていれば、そのまま確認の一言になります</li>
+  </ul>
+  <div class="memo"><span class="lbl">中級者向けメモ</span>何度も同じ直しをする所は、STEP 2 のメモに1行足しておくと、次から直さなくてよくなります。返事係が育っていきます。</div>
+</section>
+
+<section class="step" id="step5">
+  <header><span class="no">STEP 5</span><h2>お礼・日にちの変更・キャンセルの返事も作る</h2></header>
+  <span class="lbl">なぜ必要？</span>
+  <p>予約のあとの返事も、同じ返事係に任せます。</p>
+  <span class="lbl">やさしい説明</span>
+  <p>やり方は STEP 4 と同じです。お礼は、届いた文が無くても作れます。</p>
+  <span class="lbl">手順</span>
+  <ol>
+    <li>日にちの変更やキャンセルは、届いた文を STEP 4 と同じように貼る</li>
+    <li>お礼は、下の2つ目のように「誰に・何をした」を書くだけ</li>
+    <li>3つの文を作ってみる</li>
+  </ol>
+  <div class="copy"><span class="cap">1つ目（日にちの変更）</span><pre id="c5">この文に返事を作って：「すみません、明日の予約を来週に変えられますか？」</pre><button type="button" data-copy="c5">コピーする</button><span class="msg" role="status"></span></div>
+  <div class="copy"><span class="cap">2つ目（お礼）</span><pre id="c6">今日来てくださった◯◯様へのお礼の文を作って。メニューはカット。次は1か月後がおすすめ</pre><button type="button" data-copy="c6">コピーする</button><span class="msg" role="status"></span></div>
+  <div class="ok">
+    <span class="lbl">これが出来たらOK</span>
+    <p>お礼・日にちの変更・キャンセルの3つの文が作れた。</p>
+    <button type="button" data-step="5" aria-pressed="false">できたら押す</button>
+  </div>
+  <span class="lbl">こんな画面が出たら</span>
+  <ul class="trouble">
+    <li>キャンセル料のことが言いづらい → メモのキャンセルの決まりに、言い方ごと書いておく（例：「当日のキャンセルは、恐れ入りますが…」）</li>
+  </ul>
+  <div class="memo"><span class="lbl">中級者向けメモ</span>よく使う文は、スマホのメモにも取っておくと、AI を開かずにすぐ送れます。</div>
+</section>
+
+<section class="next" id="next">
+  <h2>ここから先は、お店ごとに違います</h2>
+  <p>返事の文は、貼るだけで出るようになりました。</p>
+  <p>本当に事務が減るのは、ここからです。<br>予約表への書き込み、請求書、お客様ごとの記録まで AI に任せると、閉店後の事務がもっと減ります。人を雇わずに、です。<br>ただ、どこから任せるかは、お店の回し方によって違います。</p>
+  <p>30分のオンライン相談で、あなたのお店の「予約・請求・記録」のどれから任せるかを、一緒に決めます。<br>この LINE で「相談」と送ってください。</p>
+  <!-- 押すと LINE が開き、公式アカウント @316lltbw とのトークに「相談」が入った状態になる（送るのは本人） -->
+  <a class="cta" href="https://line.me/R/oaMessage/@316lltbw/?%E7%9B%B8%E8%AB%87">LINEで「相談」と送る</a>
+  <p class="cta-note">ボタンが開かない時は、LINE のトークで「相談」と打って送ってください。</p>
+</section>
+
+<footer>
+  <p>田中｜初速制作室</p>
+  <p><a href="https://tanaka264839-cmyk.github.io/shosoku-lp/">初速制作室のページ</a></p>
+</footer>
+
+</main>
+
+<script>
+(function(){
+  /* 写す文：押したら、上の枠の文をそのまま写す。写せない端末では、文を選んだ状態にして長押しを案内する */
+  function fallbackCopy(text){
+    var ta = document.createElement('textarea');
+    ta.value = text;
+    ta.setAttribute('readonly', '');
+    ta.style.position = 'fixed';
+    ta.style.top = '-1000px';
+    ta.style.fontSize = '16px';
+    document.body.appendChild(ta);
+    ta.select();
+    ta.setSelectionRange(0, ta.value.length);
+    var ok = false;
+    try { ok = document.execCommand('copy'); } catch (e) { ok = false; }
+    document.body.removeChild(ta);
+    return ok;
+  }
+  function copyText(text){
+    if (navigator.clipboard && window.isSecureContext) {
+      return navigator.clipboard.writeText(text).then(function(){ return true; }, function(){ return fallbackCopy(text); });
+    }
+    return Promise.resolve(fallbackCopy(text));
+  }
+  function selectPre(pre){
+    try {
+      var r = document.createRange();
+      r.selectNodeContents(pre);
+      var s = window.getSelection();
+      s.removeAllRanges();
+      s.addRange(r);
+    } catch (e) {}
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('button[data-copy]'), function(btn){
+    btn.addEventListener('click', function(){
+      var pre = document.getElementById(btn.getAttribute('data-copy'));
+      var msg = btn.parentNode.querySelector('.msg');
+      copyText(pre.textContent).then(function(ok){
+        if (ok) {
+          btn.textContent = 'コピーしました';
+          btn.classList.add('done');
+          msg.classList.remove('on');
+          setTimeout(function(){ btn.textContent = 'コピーする'; btn.classList.remove('done'); }, 2000);
+        } else {
+          selectPre(pre);
+          msg.textContent = 'うまく写せませんでした。上の文を長押しして「コピー」を選んでください。';
+          msg.classList.add('on');
+        }
+      });
+    });
+  });
+
+  /* 進み具合：「できたら押す」を押した数を上の帯に出す。この端末にだけ覚える（覚えられない時も、表示はそのまま動く） */
+  var KEY = 'shosoku.henjigakari.v1';
+  var TOTAL = 5;
+  var done = {};
+  try {
+    var saved = JSON.parse(window.localStorage.getItem(KEY) || '[]');
+    if (Array.isArray(saved)) saved.forEach(function(n){ if (n >= 1 && n <= TOTAL) done[n] = true; });
+  } catch (e) { done = {}; }
+  var btns = document.querySelectorAll('button[data-step]');
+  function render(){
+    var count = 0;
+    Array.prototype.forEach.call(btns, function(b){
+      var n = Number(b.getAttribute('data-step'));
+      var on = !!done[n];
+      if (on) count++;
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      b.textContent = on ? 'できました（押すと戻せます）' : 'できたら押す';
+    });
+    document.getElementById('progText').textContent = count + '/' + TOTAL + ' 完了';
+    document.getElementById('progBar').style.width = (count / TOTAL * 100) + '%';
+  }
+  function save(){
+    try { window.localStorage.setItem(KEY, JSON.stringify(Object.keys(done).map(Number))); } catch (e) {}
+  }
+  Array.prototype.forEach.call(btns, function(b){
+    b.addEventListener('click', function(){
+      var n = Number(b.getAttribute('data-step'));
+      if (done[n]) { delete done[n]; } else { done[n] = true; }
+      save();
+      render();
+    });
+  });
+  render();
+})();
+</script>
+</body>
+</html>
