@@ -12,7 +12,7 @@
 ## 作品
 
 - [ポートフォリオ（作品ごとの担当範囲・役割・使った技術）](https://robust-brisket-b41.notion.site/5a96514f6ecd8273bd028122ad20f471)
-- 運送会社の業務システム（受託）：Google スプレッドシートと Google Apps Script で、電話受付から予定表・台帳・依頼メールの下書きまでを一つの仕組みに。2026年10月から本番運用中・保守を継続（お客様の名前・画面は非公開）
+- 運送会社の業務システム（受託）：Google スプレッドシートと Google Apps Script で、日々の業務を一つの仕組みに。2026年10月から本番運用中・保守を継続（お客様の名前・画面は非公開）
 - 帳票OCRの業務ツール：請求書・日報など紙の帳票の写真やPDFをAIで読み取り、人が確認・承認した分だけExcelに出す（Python・Azure AI Document Intelligence・Claude）
 - [接骨院向けAIチャットボット（LINE でよくある質問への回答と予約の受付・確認を24時間。LINE Messaging API・Claude API）](https://youtu.be/GTTvPerFMgY)
 - [StepLock（歩いた分だけスマホが使える Android アプリ・Google Play で公開中）](https://play.google.com/store/apps/details?id=com.shosoku.steplock)
